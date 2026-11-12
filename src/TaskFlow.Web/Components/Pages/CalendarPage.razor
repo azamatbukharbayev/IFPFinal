@@ -1,0 +1,150 @@
+@page "/calendar"
+@rendermode InteractiveServer
+@inject SchedulingService SchedulingService
+@inject TaskService TaskService
+
+<PageTitle>Calendar | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Calendar & Schedule</h3>
+            <p class="text-muted small mb-0">Deadline scheduling and date-driven task management</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth"><i class="bi bi-chevron-left"></i></button>
+            <h5 class="fw-bold mb-0 text-center" style="min-width: 160px;">@currentDate.ToString("MMMM yyyy")</h5>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth"><i class="bi bi-chevron-right"></i></button>
+            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="Today">Today</button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small mt-2">Loading calendar data...</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="calendar-grid">
+                    <!-- Day Headers -->
+                    <div class="row g-0 text-center bg-light border-bottom py-2 fw-semibold small text-muted">
+                        <div class="col">Mon</div>
+                        <div class="col">Tue</div>
+                        <div class="col">Wed</div>
+                        <div class="col">Thu</div>
+                        <div class="col">Fri</div>
+                        <div class="col">Sat</div>
+                        <div class="col">Sun</div>
+                    </div>
+
+                    <!-- Weeks and Days -->
+                    @foreach (var week in weeks)
+                    {
+                        <div class="row g-0 border-bottom calendar-week">
+                            @foreach (var day in week)
+                            {
+                                var isCurrentMonth = day.Month == currentDate.Month;
+                                var isToday = day.Date == DateTime.UtcNow.Date;
+                                var dayTasks = calendarTasks.TryGetValue(day.Date, out var list) ? list : new List<TaskItemDto>();
+
+                                <div class="col p-2 calendar-day border-end @(isCurrentMonth ? "bg-white" : "bg-light text-muted opacity-50") @(isToday ? "border border-primary border-2 bg-primary-subtle" : "")" style="min-height: 100px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold @(isToday ? "text-primary" : "")">@day.Day</span>
+                                        @if (dayTasks.Count > 0)
+                                        {
+                                            <span class="badge bg-secondary rounded-pill small" style="font-size: 0.65rem;">@dayTasks.Count</span>
+                                        }
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach (var t in dayTasks.Take(3))
+                                        {
+                                            var isOverdue = t.Deadline < DateTime.UtcNow && t.Status != TaskItemStatus.Completed;
+                                            <div class="badge text-start text-truncate p-1 small @(isOverdue ? "bg-danger" : t.Status == TaskItemStatus.Completed ? "bg-success" : "bg-primary")" title="@t.Title">
+                                                @t.Title
+                                            </div>
+                                        }
+                                        @if (dayTasks.Count > 3)
+                                        {
+                                            <span class="small text-muted" style="font-size: 0.65rem;">+@(dayTasks.Count - 3) more</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DateTime currentDate = DateTime.UtcNow.Date;
+    private Dictionary<DateTime, List<TaskItemDto>> calendarTasks = new();
+    private List<List<DateTime>> weeks = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCalendarAsync();
+    }
+
+    private async Task LoadCalendarAsync()
+    {
+        isLoading = true;
+        BuildMonthMatrix();
+        calendarTasks = await SchedulingService.GetMonthlyCalendarAsync(currentDate.Year, currentDate.Month);
+        isLoading = false;
+    }
+
+    private void BuildMonthMatrix()
+    {
+        weeks.Clear();
+        var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+        // Monday start
+        var dayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+        var offset = dayOfWeek == 0 ? 6 : dayOfWeek - 1; // 0 = Mon, 6 = Sun
+        var startDate = firstDayOfMonth.AddDays(-offset);
+
+        var currentDay = startDate;
+        while (currentDay <= lastDayOfMonth || weeks.Count < 5 || currentDay.DayOfWeek != DayOfWeek.Monday)
+        {
+            var week = new List<DateTime>();
+            for (var i = 0; i < 7; i++)
+            {
+                week.Add(currentDay);
+                currentDay = currentDay.AddDays(1);
+            }
+            weeks.Add(week);
+
+            if (currentDay > lastDayOfMonth && currentDay.DayOfWeek == DayOfWeek.Monday)
+                break;
+        }
+    }
+
+    private async Task PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+        await LoadCalendarAsync();
+    }
+
+    private async Task NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+        await LoadCalendarAsync();
+    }
+
+    private async Task Today()
+    {
+        currentDate = DateTime.UtcNow.Date;
+        await LoadCalendarAsync();
+    }
+}

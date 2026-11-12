@@ -1,0 +1,47 @@
+erDiagram
+    PROJECT ||--o{ TASK_ITEM : "contains"
+    TASK_ITEM ||--o{ TASK_ITEM : "subtasks"
+    TASK_ITEM ||--o{ TASK_DEPENDENCY : "depends on"
+    TASK_ITEM ||--o{ TASK_DEPENDENCY : "depended on by"
+    TASK_ITEM ||--o{ ACTIVITY_LOG : "generates"
+    PROJECT ||--o{ ACTIVITY_LOG : "tracks"
+
+    PROJECT {
+        Guid Id PK
+        string Name
+        string Description
+        string Status
+        DateTime CreatedAt
+        DateTime Deadline
+    }
+
+    TASK_ITEM {
+        Guid Id PK
+        string Title
+        string Description
+        string Status
+        string Priority
+        DateTime CreatedAt
+        DateTime Deadline
+        DateTime CompletedAt
+        Guid ProjectId FK
+        decimal EstimatedEffortHours
+        string LabelsJson
+        Guid ParentTaskId FK
+    }
+
+    TASK_DEPENDENCY {
+        Guid Id PK
+        Guid TaskId FK
+        Guid DependsOnTaskId FK
+        DateTime CreatedAt
+    }
+
+    ACTIVITY_LOG {
+        Guid Id PK
+        string Action
+        string Details
+        DateTime Timestamp
+        Guid TaskId FK
+        Guid ProjectId FK
+    }

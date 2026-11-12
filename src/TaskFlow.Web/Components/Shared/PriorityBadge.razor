@@ -1,0 +1,27 @@
+@namespace TaskFlow.Web.Components.Shared
+
+<span class="badge @BadgeClass">
+    <i class="@IconClass me-1"></i>@Priority
+</span>
+
+@code {
+    [Parameter, EditorRequired] public TaskPriority Priority { get; set; }
+
+    private string BadgeClass => Priority switch
+    {
+        TaskPriority.Critical => "bg-danger text-white",
+        TaskPriority.High => "bg-warning text-dark",
+        TaskPriority.Medium => "bg-primary text-white",
+        TaskPriority.Low => "bg-secondary text-white",
+        _ => "bg-light text-dark"
+    };
+
+    private string IconClass => Priority switch
+    {
+        TaskPriority.Critical => "bi bi-exclamation-octagon-fill",
+        TaskPriority.High => "bi bi-arrow-up-circle-fill",
+        TaskPriority.Medium => "bi bi-dash-circle-fill",
+        TaskPriority.Low => "bi bi-arrow-down-circle-fill",
+        _ => "bi bi-circle"
+    };
+}

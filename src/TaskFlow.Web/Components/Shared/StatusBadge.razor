@@ -1,0 +1,36 @@
+@namespace TaskFlow.Web.Components.Shared
+
+<span class="badge @BadgeClass">
+    <i class="@IconClass me-1"></i>@GetDisplayText(Status)
+</span>
+
+@code {
+    [Parameter, EditorRequired] public TaskItemStatus Status { get; set; }
+
+    private string BadgeClass => Status switch
+    {
+        TaskItemStatus.ToDo => "bg-secondary text-white",
+        TaskItemStatus.InProgress => "bg-info text-dark",
+        TaskItemStatus.Blocked => "bg-danger text-white",
+        TaskItemStatus.Completed => "bg-success text-white",
+        _ => "bg-light text-dark"
+    };
+
+    private string IconClass => Status switch
+    {
+        TaskItemStatus.ToDo => "bi bi-circle",
+        TaskItemStatus.InProgress => "bi bi-play-circle-fill",
+        TaskItemStatus.Blocked => "bi bi-shield-x",
+        TaskItemStatus.Completed => "bi bi-check-circle-fill",
+        _ => "bi bi-circle"
+    };
+
+    private static string GetDisplayText(TaskItemStatus status) => status switch
+    {
+        TaskItemStatus.ToDo => "To Do",
+        TaskItemStatus.InProgress => "In Progress",
+        TaskItemStatus.Blocked => "Blocked",
+        TaskItemStatus.Completed => "Completed",
+        _ => status.ToString()
+    };
+}

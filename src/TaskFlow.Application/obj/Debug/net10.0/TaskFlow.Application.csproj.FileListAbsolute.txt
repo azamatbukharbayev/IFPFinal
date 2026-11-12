@@ -1,0 +1,16 @@
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.csproj.AssemblyReference.cache
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.AssemblyInfoInputs.cache
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.AssemblyInfo.cs
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.csproj.CoreCompileInputs.cache
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.sourcelink.json
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/bin/Debug/net10.0/TaskFlow.Application.deps.json
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/bin/Debug/net10.0/TaskFlow.Application.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/bin/Debug/net10.0/TaskFlow.Application.pdb
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/bin/Debug/net10.0/TaskFlow.Domain.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/bin/Debug/net10.0/TaskFlow.Domain.pdb
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.7EAD9043.Up2Date
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/refint/TaskFlow.Application.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/TaskFlow.Application.pdb
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Application/obj/Debug/net10.0/ref/TaskFlow.Application.dll

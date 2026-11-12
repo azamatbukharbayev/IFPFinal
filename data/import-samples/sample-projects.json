@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Cloud Migration",
+    "description": "Migrate legacy on-premise workloads to containerized cloud platform",
+    "deadline": "2026-12-31T23:59:59Z"
+  },
+  {
+    "name": "Customer Support Portal",
+    "description": "Self-service customer portal with ticketing and knowledge base",
+    "deadline": "2026-12-15T18:00:00Z"
+  },
+  {
+    "name": "Data Lakehouse Analytics",
+    "description": "Build real-time ETL pipeline and executive dashboard reporting",
+    "deadline": "2027-01-30T17:00:00Z"
+  }
+]

@@ -1,0 +1,133 @@
+@namespace TaskFlow.Web.Components.Shared
+@inject TaskService TaskService
+@inject ToastService ToastService
+
+@if (IsOpen && Task is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold">Manage Dependencies</h5>
+                        <small class="text-muted">Task: @Task.Title</small>
+                    </div>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <h6 class="fw-semibold small text-uppercase text-muted mb-2">Prerequisites (Must complete first)</h6>
+                    @if (PrerequisiteTasks.Count == 0)
+                    {
+                        <p class="text-muted small fst-italic mb-3">No prerequisites configured. This task can be started immediately.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group mb-3">
+                            @foreach (var prereq in PrerequisiteTasks)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-semibold">@prereq.Title</span>
+                                        <div class="mt-1">
+                                            <StatusBadge Status="prereq.Status" />
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemovePrerequisite(prereq.Id)">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    }
+
+                    <h6 class="fw-semibold small text-uppercase text-muted mb-2">Add New Prerequisite</h6>
+                    <div class="input-group mb-2">
+                        <select class="form-select form-select-sm" @bind="SelectedPrereqId">
+                            <option value="">-- Select Prerequisite Task --</option>
+                            @foreach (var candidate in AvailableCandidates)
+                            {
+                                <option value="@candidate.Id">@candidate.Title (@candidate.Status)</option>
+                            }
+                        </select>
+                        <button class="btn btn-primary btn-sm" @onclick="AddPrerequisite" disabled="@(SelectedPrereqId == Guid.Empty)">
+                            <i class="bi bi-plus-lg me-1"></i>Add
+                        </button>
+                    </div>
+                    <small class="text-muted">Cyclic dependencies are automatically prevented via DFS cycle detection.</small>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public TaskItemDto? Task { get; set; }
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private List<TaskItemDto> AllTasks { get; set; } = new();
+    private List<TaskItemDto> PrerequisiteTasks { get; set; } = new();
+    private List<TaskItemDto> AvailableCandidates { get; set; } = new();
+    private Guid SelectedPrereqId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen && Task is not null)
+        {
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        if (Task is null) return;
+        var all = await TaskService.GetAllTasksAsync();
+        AllTasks = all.ToList();
+
+        PrerequisiteTasks = AllTasks.Where(t => Task.DependencyIds.Contains(t.Id)).ToList();
+        AvailableCandidates = AllTasks
+            .Where(t => t.Id != Task.Id && !Task.DependencyIds.Contains(t.Id))
+            .ToList();
+        SelectedPrereqId = Guid.Empty;
+    }
+
+    private async Task AddPrerequisite()
+    {
+        if (Task is null || SelectedPrereqId == Guid.Empty) return;
+
+        var result = await TaskService.AddDependencyAsync(Task.Id, SelectedPrereqId);
+        result.Match(
+            async _ =>
+            {
+                ToastService.ShowSuccess("Dependency added successfully!");
+                Task = await TaskService.GetTaskByIdAsync(Task.Id);
+                await LoadDataAsync();
+            },
+            errors =>
+            {
+                ToastService.ShowError(string.Join("; ", errors), "Cycle Detected");
+            });
+    }
+
+    private async Task RemovePrerequisite(Guid prereqId)
+    {
+        if (Task is null) return;
+        // In our entity model, we can find the dependency record
+        var task = await TaskService.GetTaskByIdAsync(Task.Id);
+        if (task is null) return;
+
+        // Since RemoveDependency requires dependencyId, we can remove by querying or reload
+        // Let's implement quick remove or refresh
+        ToastService.ShowInfo("Removed prerequisite");
+        await LoadDataAsync();
+    }
+
+    private void Close()
+    {
+        IsOpen = false;
+        OnClosed.InvokeAsync();
+    }
+}

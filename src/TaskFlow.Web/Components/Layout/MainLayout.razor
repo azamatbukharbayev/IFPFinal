@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+@namespace TaskFlow.Web.Components.Layout
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center bg-white border-bottom">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary fw-medium small">
+                    <i class="bi bi-clock me-1"></i>UTC: @DateTime.UtcNow.ToString("MMM dd, yyyy HH:mm")
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="https://github.com/azamatbukharbayev" target="_blank" class="text-decoration-none text-muted small" title="Developer A: Azamat Bukharbayev">
+                    <i class="bi bi-github me-1"></i>Azamat
+                </a>
+                <span class="text-muted">|</span>
+                <a href="https://github.com/ruzaisembekova815-oss" target="_blank" class="text-decoration-none text-muted small" title="Developer B: Ruza Isembekova">
+                    <i class="bi bi-github me-1"></i>Ruza
+                </a>
+            </div>
+        </div>
+
+        <article class="content px-4 py-4">
+            @Body
+        </article>
+
+        <ToastContainer />
+    </main>
+</div>

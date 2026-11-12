@@ -1,0 +1,100 @@
+@page "/projects"
+@rendermode InteractiveServer
+@inject ProjectService ProjectService
+@inject ToastService ToastService
+
+<PageTitle>Projects | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Projects</h3>
+            <p class="text-muted small mb-0">Organize tasks and track effort-weighted project completion</p>
+        </div>
+        <button class="btn btn-primary btn-sm" @onclick="OpenCreateModal">
+            <i class="bi bi-plus-lg me-1"></i>New Project
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small mt-2">Loading projects...</p>
+        </div>
+    }
+    else if (projects.Count == 0)
+    {
+        <EmptyState Title="No projects found" Description="Start organizing your work by creating a new project." ActionText="Create Project" OnAction="OpenCreateModal" />
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var prj in projects)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <ProjectCard Project="prj" OnEdit="OpenEditModal" OnDelete="ConfirmDelete" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modals -->
+<ProjectFormModal IsOpen="@isFormModalOpen" ProjectToEdit="@projectToEdit" OnSaved="LoadProjectsAsync" OnClosed="() => isFormModalOpen = false" />
+<ConfirmationDialog IsOpen="@isDeleteModalOpen" Title="Delete Project" Message="@($"Are you sure you want to delete project '{projectToDelete?.Name}'? Tasks in this project will not be deleted but will have their project disassociated.")" ConfirmText="Delete Project" OnConfirm="DeleteConfirmedAsync" OnCancel="() => isDeleteModalOpen = false" />
+
+@code {
+    private List<ProjectDto> projects = new();
+    private bool isLoading = true;
+    private bool isFormModalOpen;
+    private ProjectDto? projectToEdit;
+    private bool isDeleteModalOpen;
+    private ProjectDto? projectToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjectsAsync();
+    }
+
+    private async Task LoadProjectsAsync()
+    {
+        isLoading = true;
+        var result = await ProjectService.GetAllProjectsAsync();
+        projects = result.ToList();
+        isLoading = false;
+    }
+
+    private void OpenCreateModal()
+    {
+        projectToEdit = null;
+        isFormModalOpen = true;
+    }
+
+    private void OpenEditModal(ProjectDto prj)
+    {
+        projectToEdit = prj;
+        isFormModalOpen = true;
+    }
+
+    private void ConfirmDelete(ProjectDto prj)
+    {
+        projectToDelete = prj;
+        isDeleteModalOpen = true;
+    }
+
+    private async Task DeleteConfirmedAsync()
+    {
+        if (projectToDelete is null) return;
+        var result = await ProjectService.DeleteProjectAsync(projectToDelete.Id);
+        result.Match(
+            _ =>
+            {
+                ToastService.ShowSuccess("Project deleted successfully!");
+                isDeleteModalOpen = false;
+                projectToDelete = null;
+                LoadProjectsAsync();
+            },
+            errors => ToastService.ShowError(string.Join("; ", errors)));
+    }
+}

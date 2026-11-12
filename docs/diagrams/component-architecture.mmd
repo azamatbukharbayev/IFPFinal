@@ -1,0 +1,65 @@
+graph TD
+    subgraph AppLayout["Application Shell (MainLayout.razor)"]
+        NavMenu[NavMenu.razor]
+        TopBar[Header & GitHub Links]
+        ToastContainer[ToastContainer.razor]
+    end
+
+    subgraph Pages["Routable Page Views"]
+        Home[Home.razor - Dashboard]
+        TasksPage[TasksPage.razor - Task List]
+        KanbanPage[KanbanPage.razor - Visual Board]
+        ProjectsPage[ProjectsPage.razor - Projects]
+        CalendarPage[CalendarPage.razor - Schedule]
+        AnalyticsPage[AnalyticsPage.razor - Charts]
+        SettingsPage[SettingsPage.razor - CSV/JSON IO]
+    end
+
+    subgraph SharedComponents["Shared Atomic Components"]
+        StatsCard[StatisticsCard.razor]
+        TaskCard[TaskCard.razor]
+        ProjectCard[ProjectCard.razor]
+        StatusBadge[StatusBadge.razor]
+        PriorityBadge[PriorityBadge.razor]
+        ProgressBar[ProgressBar.razor]
+        EmptyState[EmptyState.razor]
+    end
+
+    subgraph Modals["Interactive Modals"]
+        TaskFormModal[TaskFormModal.razor]
+        ProjectFormModal[ProjectFormModal.razor]
+        DependencyModal[DependencyModal.razor]
+        ConfirmationDialog[ConfirmationDialog.razor]
+    end
+
+    subgraph StateAndServices["UI Services & State"]
+        ToastSvc[ToastService]
+        StateContainer[TaskStateContainer]
+    end
+
+    Home --> StatsCard
+    Home --> ProgressBar
+    Home --> StatusBadge
+    Home --> PriorityBadge
+
+    TasksPage --> TaskCard
+    TasksPage --> TaskFormModal
+    TasksPage --> DependencyModal
+    TasksPage --> ConfirmationDialog
+
+    KanbanPage --> TaskCard
+    KanbanPage --> TaskFormModal
+
+    ProjectsPage --> ProjectCard
+    ProjectsPage --> ProjectFormModal
+    ProjectsPage --> ConfirmationDialog
+
+    CalendarPage --> PriorityBadge
+    AnalyticsPage --> StatsCard
+    AnalyticsPage --> ProgressBar
+
+    TaskFormModal --> ToastSvc
+    DependencyModal --> ToastSvc
+    KanbanPage --> ToastSvc
+    TasksPage --> ToastSvc
+    TasksPage --> StateContainer

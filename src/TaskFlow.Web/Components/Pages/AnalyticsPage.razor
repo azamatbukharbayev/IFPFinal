@@ -1,0 +1,169 @@
+@page "/analytics"
+@rendermode InteractiveServer
+@inject AnalyticsService AnalyticsService
+
+<PageTitle>Analytics | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Productivity Analytics</h3>
+            <p class="text-muted small mb-0">Algorithmic metrics derived via functional LINQ pipelines</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="LoadAnalyticsAsync">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small mt-2">Computing analytics snapshot...</p>
+        </div>
+    }
+    else if (analytics is not null)
+    {
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <StatisticsCard Title="Completion Rate" Value="@($"{analytics.CompletionRate:F1}%")" Icon="bi bi-pie-chart" ColorTheme="success" Subtext="@($"{analytics.CompletedTasks} of {analytics.TotalTasks} tasks")" />
+            </div>
+            <div class="col-md-3">
+                <StatisticsCard Title="Avg Completion Time" Value="@($"{analytics.AverageCompletionTimeHours:F1}h")" Icon="bi bi-hourglass-split" ColorTheme="primary" Subtext="Creation to completion" />
+            </div>
+            <div class="col-md-3">
+                <StatisticsCard Title="Overdue Ratio" Value="@($"{analytics.OverdueRatio:F1}%")" Icon="bi bi-exclamation-triangle" ColorTheme="danger" Subtext="@($"{analytics.OverdueTasks} tasks past deadline")" />
+            </div>
+            <div class="col-md-3">
+                <StatisticsCard Title="Active Workload" Value="@($"{analytics.InProgressTasks}")" Icon="bi bi-lightning-charge" ColorTheme="warning" Subtext="@($"{analytics.BlockedTasks} blocked tasks")" />
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Priority Distribution -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h6 class="fw-bold mb-0">Priority Distribution</h6>
+                        <small class="text-muted">Task volume grouped by priority level</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-column gap-3 pt-2">
+                            @foreach (var (priority, count) in analytics.PriorityDistribution)
+                            {
+                                var pct = analytics.TotalTasks > 0 ? (double)count / analytics.TotalTasks * 100.0 : 0.0;
+                                var barColor = priority switch
+                                {
+                                    "Critical" => "bg-danger",
+                                    "High" => "bg-warning",
+                                    "Medium" => "bg-primary",
+                                    _ => "bg-secondary"
+                                };
+
+                                <div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold">@priority</span>
+                                        <span class="text-muted">@count tasks (@pct.ToString("F1")%)</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar @barColor" style="width: @pct%;"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Distribution -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h6 class="fw-bold mb-0">Workflow Status Distribution</h6>
+                        <small class="text-muted">Tasks distributed across pipeline stages</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-column gap-3 pt-2">
+                            @foreach (var (status, count) in analytics.StatusDistribution)
+                            {
+                                var pct = analytics.TotalTasks > 0 ? (double)count / analytics.TotalTasks * 100.0 : 0.0;
+                                var barColor = status switch
+                                {
+                                    "Completed" => "bg-success",
+                                    "InProgress" => "bg-info",
+                                    "Blocked" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+
+                                <div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-semibold">@status</span>
+                                        <span class="text-muted">@count tasks (@pct.ToString("F1")%)</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar @barColor" style="width: @pct%;"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Progress Comparison -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <h6 class="fw-bold mb-0">Project Progress Comparison</h6>
+                <small class="text-muted">Effort-weighted completion rates across all projects</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-uppercase text-muted">
+                            <tr>
+                                <th>Project</th>
+                                <th style="width: 40%;">Effort-Weighted Progress</th>
+                                <th>Total Tasks</th>
+                                <th>Completed Tasks</th>
+                                <th>Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in analytics.ProjectProgress)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@p.ProjectName</td>
+                                    <td>
+                                        <ProgressBar Percentage="@p.CompletionPercentage" Height="8" />
+                                    </td>
+                                    <td>@p.TotalTasks</td>
+                                    <td><span class="badge bg-success-subtle text-success">@p.CompletedTasks</span></td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary">@(p.TotalTasks - p.CompletedTasks)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private AnalyticsDto? analytics;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAnalyticsAsync();
+    }
+
+    private async Task LoadAnalyticsAsync()
+    {
+        isLoading = true;
+        analytics = await AnalyticsService.GetAnalyticsAsync();
+        isLoading = false;
+    }
+}

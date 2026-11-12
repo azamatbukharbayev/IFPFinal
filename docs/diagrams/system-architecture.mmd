@@ -1,0 +1,53 @@
+flowchart TD
+    subgraph Presentation["Presentation Tier (Blazor Server - Net 10)"]
+        UI[Interactive UI Pages: Dashboard, Tasks, Kanban, Projects, Calendar, Analytics]
+        Components[Reusable Components: TaskCard, StatusBadge, PriorityBadge, Modals]
+        State[TaskStateContainer & ToastService]
+        UI --> Components
+        UI --> State
+    end
+
+    subgraph Application["Application Layer (Use Cases & Contracts)"]
+        TaskSvc[TaskService]
+        ProjSvc[ProjectService]
+        AnalytSvc[AnalyticsService]
+        SchedSvc[SchedulingService]
+        ImpExpSvc[ImportExportService]
+        UoWInt[IUnitOfWork & Repositories]
+    end
+
+    subgraph Domain["Domain Layer (Functional Core)"]
+        Monads["Monads: Option&lt;T&gt;, Result&lt;T&gt;, ValidationResult"]
+        Entities["Entities: TaskItem, Project, TaskDependency, ActivityLog"]
+        PureEngines["Pure Engines: TaskPrioritizationService, DependencyGraphService, ProjectProgressService"]
+        Pipelines["Higher-Order Filter Pipelines & FunctionalExtensions"]
+    end
+
+    subgraph Infrastructure["Infrastructure Tier (Imperative Shell)"]
+        DbContext[(TaskFlowDbContext - SQLite)]
+        RepoImpl[TaskRepository, ProjectRepository, ActivityLogRepository]
+        UnitOfWorkImpl[UnitOfWork]
+        CsvEngine[RFC-4180 CSV Engine]
+    end
+
+    UI --> TaskSvc
+    UI --> ProjSvc
+    UI --> AnalytSvc
+    UI --> SchedSvc
+    UI --> ImpExpSvc
+
+    TaskSvc --> PureEngines
+    TaskSvc --> Monads
+    ProjSvc --> PureEngines
+    AnalytSvc --> PureEngines
+    TaskSvc --> UoWInt
+    ProjSvc --> UoWInt
+    AnalytSvc --> UoWInt
+
+    Entities --> Monads
+    PureEngines --> Entities
+
+    RepoImpl --> UoWInt
+    UnitOfWorkImpl --> UoWInt
+    RepoImpl --> DbContext
+    CsvEngine --> ImpExpSvc

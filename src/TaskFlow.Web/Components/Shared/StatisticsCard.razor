@@ -1,0 +1,45 @@
+@namespace TaskFlow.Web.Components.Shared
+
+<div class="card shadow-sm border-0 stat-card h-100">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <p class="text-muted text-uppercase fw-semibold mb-1 small">@Title</p>
+                <h3 class="mb-0 fw-bold @ValueClass">@Value</h3>
+                @if (!string.IsNullOrEmpty(Subtext))
+                {
+                    <small class="text-muted">@Subtext</small>
+                }
+            </div>
+            <div class="stat-icon-wrapper rounded-circle p-3 @IconBackgroundClass">
+                <i class="@Icon text-white fs-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value { get; set; } = string.Empty;
+    [Parameter] public string? Subtext { get; set; }
+    [Parameter, EditorRequired] public string Icon { get; set; } = "bi bi-activity";
+    [Parameter] public string ColorTheme { get; set; } = "primary";
+
+    private string ValueClass => ColorTheme switch
+    {
+        "danger" => "text-danger",
+        "warning" => "text-warning",
+        "success" => "text-success",
+        "info" => "text-info",
+        _ => "text-primary"
+    };
+
+    private string IconBackgroundClass => ColorTheme switch
+    {
+        "danger" => "bg-danger",
+        "warning" => "bg-warning",
+        "success" => "bg-success",
+        "info" => "bg-info",
+        _ => "bg-primary"
+    };
+}

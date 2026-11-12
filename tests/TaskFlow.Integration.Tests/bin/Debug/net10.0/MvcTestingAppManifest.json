@@ -1,0 +1,6 @@
+{
+  "TaskFlow.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/azamatbukharbayev\/Documents\/AITU\/IFPFinal\/src\/TaskFlow.Application",
+  "TaskFlow.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/azamatbukharbayev\/Documents\/AITU\/IFPFinal\/src\/TaskFlow.Domain",
+  "TaskFlow.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/azamatbukharbayev\/Documents\/AITU\/IFPFinal\/src\/TaskFlow.Infrastructure",
+  "TaskFlow.Web, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/azamatbukharbayev\/Documents\/AITU\/IFPFinal\/src\/TaskFlow.Web"
+}

@@ -1,0 +1,7 @@
+Title,Description,Priority,Deadline,ProjectName,EstimatedEffortHours,Labels
+"Setup Cloud Infrastructure","Provision Azure resources with Terraform","Critical","2026-11-25T18:00:00Z","Website Redesign",16.0,"devops,cloud,terraform"
+"Configure OAuth Identity Server","Configure authorization server with PKCE flow","High","2026-11-20T12:00:00Z","API Integration",8.0,"security,auth"
+"Optimize Database Queries","Add composite indices and analyze slow queries","High","2026-11-22T15:00:00Z","Mobile App MVP",6.0,"performance,sql"
+"Implement Dark Theme","CSS variables and theme switching toggle","Medium","2026-11-28T09:00:00Z","Website Redesign",4.5,"frontend,css"
+"Write Integration Tests","Add WebApplicationFactory integration test suites","High","2026-11-18T16:00:00Z","API Integration",7.0,"testing,qa"
+"User Acceptance Testing","Coordinate testing sessions with stakeholders","Medium","2026-12-05T14:00:00Z","Mobile App MVP",12.0,"testing,uat"

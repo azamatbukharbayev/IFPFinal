@@ -1,0 +1,224 @@
+@page "/settings"
+@rendermode InteractiveServer
+@inject IImportExportService ImportExportService
+@inject ToastService ToastService
+@inject IJSRuntime JS
+
+<PageTitle>Settings & Data Management | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark mb-0">Settings & Data Management</h3>
+        <p class="text-muted small mb-0">Import/export task archives, inspect architecture, and manage persistence</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Import Data -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-cloud-arrow-up me-2 text-primary"></i>Import Data</h6>
+                    <small class="text-muted">Import tasks or projects from external CSV/JSON files</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Import Tasks from CSV</label>
+                        <InputFile OnChange="HandleCsvUpload" class="form-control form-control-sm" accept=".csv" />
+                        <small class="text-muted d-block mt-1">Header format: <code>Title,Description,Priority,Deadline,ProjectName,EstimatedEffortHours,Labels</code></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Import Projects from JSON</label>
+                        <InputFile OnChange="HandleJsonUpload" class="form-control form-control-sm" accept=".json" />
+                        <small class="text-muted d-block mt-1">Format: JSON array of <code>{ Name, Description, Deadline }</code></small>
+                    </div>
+
+                    @if (isImporting)
+                    {
+                        <div class="alert alert-info py-2 small">
+                            <span class="spinner-border spinner-border-sm me-2"></span>Processing import file...
+                        </div>
+                    }
+
+                    @if (importResult is not null)
+                    {
+                        <div class="alert @(importResult.FailureCount == 0 ? "alert-success" : "alert-warning") py-2 small">
+                            <strong>Import Complete:</strong> @importResult.SuccessCount records imported. @importResult.FailureCount failed.
+                            @if (importResult.Errors.Count > 0)
+                            {
+                                <ul class="mb-0 mt-1 ps-3">
+                                    @foreach (var err in importResult.Errors.Take(3))
+                                    {
+                                        <li>@err</li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Data -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-cloud-arrow-down me-2 text-success"></i>Export Data</h6>
+                    <small class="text-muted">Download all tasks in standard open formats</small>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-4">Export all tasks including projects, deadlines, effort estimates, and tags for external reporting and backups.</p>
+
+                    <div class="d-flex flex-column gap-3">
+                        <button class="btn btn-outline-primary d-flex align-items-center justify-content-between p-3" @onclick="ExportCsvAsync">
+                            <div>
+                                <i class="bi bi-filetype-csv fs-4 me-2"></i>
+                                <span class="fw-semibold">Export Tasks as CSV</span>
+                                <small class="text-muted d-block">Spreadsheet-compatible comma-separated format</small>
+                            </div>
+                            <i class="bi bi-download"></i>
+                        </button>
+
+                        <button class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-3" @onclick="ExportJsonAsync">
+                            <div>
+                                <i class="bi bi-filetype-json fs-4 me-2"></i>
+                                <span class="fw-semibold">Export Tasks as JSON</span>
+                                <small class="text-muted d-block">Structured hierarchical data with metadata</small>
+                            </div>
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic & Architecture Overview -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-info-circle me-2 text-info"></i>Academic Submission & Architecture</h6>
+                    <small class="text-muted">Astana IT University (AITU) — Introduction to Functional Programming Final Project</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold small text-uppercase text-muted">Development Team</h6>
+                            <ul class="list-group list-group-flush small">
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Azamat Bukharbayev</strong>
+                                        <div class="text-muted">Backend, Domain, FP Engine, Testing</div>
+                                    </div>
+                                    <a href="https://github.com/azamatbukharbayev" target="_blank" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-github me-1"></i>GitHub
+                                    </a>
+                                </li>
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Ruza Isembekova</strong>
+                                        <div class="text-muted">Blazor Frontend, UI/UX, Documentation</div>
+                                    </div>
+                                    <a href="https://github.com/ruzaisembekova815-oss" target="_blank" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-github me-1"></i>GitHub
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold small text-uppercase text-muted">Functional Architecture Highlights</h6>
+                            <div class="d-flex flex-wrap gap-2 pt-1">
+                                <span class="badge bg-light text-dark border">Immutability (Records)</span>
+                                <span class="badge bg-light text-dark border">Pure Functions</span>
+                                <span class="badge bg-light text-dark border">Result&lt;T&gt; Monad</span>
+                                <span class="badge bg-light text-dark border">Option&lt;T&gt; Monad</span>
+                                <span class="badge bg-light text-dark border">Higher-Order Functions</span>
+                                <span class="badge bg-light text-dark border">Currying & Partial App</span>
+                                <span class="badge bg-light text-dark border">Function Composition</span>
+                                <span class="badge bg-light text-dark border">LINQ Aggregations</span>
+                                <span class="badge bg-light text-dark border">DFS Cycle Detection O(V+E)</span>
+                                <span class="badge bg-light text-dark border">Recursion & Trampoline</span>
+                                <span class="badge bg-light text-dark border">Discriminated Unions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isImporting;
+    private ImportResultDto? importResult;
+
+    private async Task HandleCsvUpload(InputFileChangeEventArgs e)
+    {
+        isImporting = true;
+        importResult = null;
+        try
+        {
+            using var stream = e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            importResult = await ImportExportService.ImportTasksFromCsvAsync(stream);
+            ToastService.ShowSuccess($"Imported {importResult.SuccessCount} tasks!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Import failed: {ex.Message}");
+        }
+        finally
+        {
+            isImporting = false;
+        }
+    }
+
+    private async Task HandleJsonUpload(InputFileChangeEventArgs e)
+    {
+        isImporting = true;
+        importResult = null;
+        try
+        {
+            using var stream = e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            importResult = await ImportExportService.ImportProjectsFromJsonAsync(stream);
+            ToastService.ShowSuccess($"Imported {importResult.SuccessCount} projects!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Import failed: {ex.Message}");
+        }
+        finally
+        {
+            isImporting = false;
+        }
+    }
+
+    private async Task ExportCsvAsync()
+    {
+        try
+        {
+            var bytes = await ImportExportService.ExportTasksToCsvAsync();
+            var base64 = Convert.ToBase64String(bytes);
+            await JS.InvokeVoidAsync("downloadFileFromBase64", "taskflow-export.csv", "text/csv", base64);
+            ToastService.ShowSuccess("CSV exported successfully!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Export error: {ex.Message}");
+        }
+    }
+
+    private async Task ExportJsonAsync()
+    {
+        try
+        {
+            var bytes = await ImportExportService.ExportTasksToJsonAsync();
+            var base64 = Convert.ToBase64String(bytes);
+            await JS.InvokeVoidAsync("downloadFileFromBase64", "taskflow-export.json", "application/json", base64);
+            ToastService.ShowSuccess("JSON exported successfully!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Export error: {ex.Message}");
+        }
+    }
+}

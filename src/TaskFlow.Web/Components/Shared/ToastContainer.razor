@@ -1,0 +1,62 @@
+@namespace TaskFlow.Web.Components.Shared
+@inject ToastService ToastService
+@implements IDisposable
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    @foreach (var toast in Messages)
+    {
+        <div class="toast show mb-2 shadow" role="alert">
+            <div class="toast-header @GetHeaderClass(toast.Level) text-white">
+                <i class="@GetIcon(toast.Level) me-2"></i>
+                <strong class="me-auto">@toast.Title</strong>
+                <small class="text-white-50">@toast.Timestamp.ToString("HH:mm:ss")</small>
+                <button type="button" class="btn-close btn-close-white" @onclick="() => Messages.Remove(toast)"></button>
+            </div>
+            <div class="toast-body bg-white text-dark small">
+                @toast.Message
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastMessage> Messages { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += HandleShowToast;
+    }
+
+    private void HandleShowToast(ToastMessage msg)
+    {
+        Messages.Add(msg);
+        InvokeAsync(StateHasChanged);
+
+        _ = Task.Delay(4000).ContinueWith(_ =>
+        {
+            Messages.Remove(msg);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private static string GetHeaderClass(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "bg-success",
+        ToastLevel.Error => "bg-danger",
+        ToastLevel.Warning => "bg-warning text-dark",
+        _ => "bg-primary"
+    };
+
+    private static string GetIcon(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "bi bi-check-circle-fill",
+        ToastLevel.Error => "bi bi-exclamation-triangle-fill",
+        ToastLevel.Warning => "bi bi-exclamation-circle-fill",
+        _ => "bi bi-info-circle-fill"
+    };
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= HandleShowToast;
+    }
+}

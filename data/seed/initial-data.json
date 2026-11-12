@@ -1,0 +1,244 @@
+{
+  "projects": [
+    {
+      "name": "Website Redesign",
+      "description": "Complete redesign of the corporate website with modern UI/UX",
+      "deadlineDaysOffset": 45,
+      "status": "Active"
+    },
+    {
+      "name": "Mobile App MVP",
+      "description": "Develop minimum viable product for the mobile application",
+      "deadlineDaysOffset": 60,
+      "status": "Active"
+    },
+    {
+      "name": "API Integration",
+      "description": "Integrate third-party APIs for data synchronization",
+      "deadlineDaysOffset": 30,
+      "status": "Active"
+    }
+  ],
+  "tasks": [
+    {
+      "title": "Design Homepage Mockup",
+      "description": "Create wireframes and high-fidelity mockups for the homepage",
+      "priority": "High",
+      "daysOffset": -5,
+      "status": "Completed",
+      "effortHours": 8.0,
+      "projectName": "Website Redesign",
+      "labels": ["design", "ui"]
+    },
+    {
+      "title": "Implement Navigation",
+      "description": "Build responsive navigation component",
+      "priority": "High",
+      "daysOffset": 3,
+      "status": "InProgress",
+      "effortHours": 4.0,
+      "projectName": "Website Redesign",
+      "labels": ["frontend"]
+    },
+    {
+      "title": "Setup CI/CD Pipeline",
+      "description": "Configure GitHub Actions for automated deployment",
+      "priority": "Medium",
+      "daysOffset": 7,
+      "status": "ToDo",
+      "effortHours": 6.0,
+      "projectName": "Website Redesign",
+      "labels": ["devops"]
+    },
+    {
+      "title": "Create Contact Form",
+      "description": "Design and implement contact form with validation",
+      "priority": "Medium",
+      "daysOffset": 10,
+      "status": "ToDo",
+      "effortHours": 3.0,
+      "projectName": "Website Redesign",
+      "labels": ["frontend", "forms"]
+    },
+    {
+      "title": "SEO Optimization",
+      "description": "Implement meta tags, sitemap, and structured data",
+      "priority": "Low",
+      "daysOffset": 20,
+      "status": "ToDo",
+      "effortHours": 5.0,
+      "projectName": "Website Redesign",
+      "labels": ["seo"]
+    },
+    {
+      "title": "Database Schema Design",
+      "description": "Design the database schema for the mobile app",
+      "priority": "Critical",
+      "daysOffset": -3,
+      "status": "Completed",
+      "effortHours": 10.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["backend", "database"]
+    },
+    {
+      "title": "User Authentication",
+      "description": "Implement JWT-based authentication",
+      "priority": "Critical",
+      "daysOffset": 5,
+      "status": "InProgress",
+      "effortHours": 12.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["backend", "security"]
+    },
+    {
+      "title": "Push Notifications",
+      "description": "Integrate push notification service",
+      "priority": "High",
+      "daysOffset": 15,
+      "status": "Blocked",
+      "effortHours": 8.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["mobile", "notifications"]
+    },
+    {
+      "title": "User Profile Screen",
+      "description": "Build the user profile management screen",
+      "priority": "Medium",
+      "daysOffset": 12,
+      "status": "ToDo",
+      "effortHours": 6.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["mobile", "ui"]
+    },
+    {
+      "title": "Offline Data Sync",
+      "description": "Implement offline data synchronization",
+      "priority": "High",
+      "daysOffset": 25,
+      "status": "ToDo",
+      "effortHours": 15.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["mobile", "sync"]
+    },
+    {
+      "title": "App Store Submission",
+      "description": "Prepare and submit app to stores",
+      "priority": "Medium",
+      "daysOffset": 55,
+      "status": "ToDo",
+      "effortHours": 4.0,
+      "projectName": "Mobile App MVP",
+      "labels": ["release"]
+    },
+    {
+      "title": "Research API Documentation",
+      "description": "Review and document third-party API endpoints",
+      "priority": "High",
+      "daysOffset": -10,
+      "status": "Completed",
+      "effortHours": 4.0,
+      "projectName": "API Integration",
+      "labels": ["research"]
+    },
+    {
+      "title": "Implement OAuth Flow",
+      "description": "Set up OAuth 2.0 authentication with external services",
+      "priority": "Critical",
+      "daysOffset": -1,
+      "status": "InProgress",
+      "effortHours": 8.0,
+      "projectName": "API Integration",
+      "labels": ["auth", "integration"]
+    },
+    {
+      "title": "Rate Limiting Handler",
+      "description": "Implement rate limiting and retry logic",
+      "priority": "High",
+      "daysOffset": 8,
+      "status": "ToDo",
+      "effortHours": 6.0,
+      "projectName": "API Integration",
+      "labels": ["backend"]
+    },
+    {
+      "title": "Data Mapping Layer",
+      "description": "Create DTOs and mapping for external API responses",
+      "priority": "Medium",
+      "daysOffset": 12,
+      "status": "ToDo",
+      "effortHours": 5.0,
+      "projectName": "API Integration",
+      "labels": ["backend", "mapping"]
+    },
+    {
+      "title": "Error Logging Service",
+      "description": "Centralized error logging for API calls",
+      "priority": "Medium",
+      "daysOffset": 15,
+      "status": "ToDo",
+      "effortHours": 4.0,
+      "projectName": "API Integration",
+      "labels": ["monitoring"]
+    },
+    {
+      "title": "Performance Testing",
+      "description": "Load test API integration endpoints",
+      "priority": "Low",
+      "daysOffset": 20,
+      "status": "ToDo",
+      "effortHours": 6.0,
+      "projectName": "API Integration",
+      "labels": ["testing"]
+    },
+    {
+      "title": "Write Unit Tests",
+      "description": "Comprehensive unit test coverage for core logic",
+      "priority": "High",
+      "daysOffset": -2,
+      "status": "InProgress",
+      "effortHours": 10.0,
+      "projectName": null,
+      "labels": ["testing"]
+    },
+    {
+      "title": "Code Review Session",
+      "description": "Review pull requests and provide feedback",
+      "priority": "Medium",
+      "daysOffset": 1,
+      "status": "ToDo",
+      "effortHours": 3.0,
+      "projectName": null,
+      "labels": ["review"]
+    },
+    {
+      "title": "Documentation Update",
+      "description": "Update project documentation and README",
+      "priority": "Low",
+      "daysOffset": -7,
+      "status": "Completed",
+      "effortHours": 2.0,
+      "projectName": null,
+      "labels": ["docs"]
+    },
+    {
+      "title": "Security Audit",
+      "description": "Review code for security vulnerabilities",
+      "priority": "Critical",
+      "daysOffset": 2,
+      "status": "ToDo",
+      "effortHours": 8.0,
+      "projectName": null,
+      "labels": ["security"]
+    },
+    {
+      "title": "Team Standup Notes",
+      "description": "Prepare notes for daily standup meeting",
+      "priority": "Low",
+      "daysOffset": 0,
+      "status": "ToDo",
+      "effortHours": 0.5,
+      "projectName": null,
+      "labels": ["meeting"]
+    }
+  ]
+}

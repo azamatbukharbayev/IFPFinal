@@ -1,0 +1,15 @@
+stateDiagram-v2
+    [*] --> ToDo : Task Creation
+
+    ToDo --> InProgress : Start Working
+    ToDo --> Blocked : Prerequisite Pending
+    ToDo --> Completed : Direct Completion
+
+    InProgress --> Blocked : Impasse / Wait for Dependency
+    InProgress --> Completed : Verification Success
+    InProgress --> ToDo : Returned to Backlog
+
+    Blocked --> ToDo : Unblocked
+    Blocked --> InProgress : Resumed Directly
+
+    Completed --> ToDo : Reopened for Rework

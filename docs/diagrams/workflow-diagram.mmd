@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor User as User / Browser
+    participant UI as Blazor Component
+    participant Svc as TaskService
+    participant PureCore as DependencyGraphService
+    participant Entity as TaskItem
+    participant Repo as TaskRepository & SQLite
+
+    User->>UI: Request status change to 'Completed'
+    UI->>Svc: ChangeStatusAsync(taskId, Completed)
+    Svc->>Repo: Fetch task, all dependencies, and all tasks
+    Repo-->>Svc: Return entities
+
+    Note over Svc,PureCore: Pure Functional Verification
+    Svc->>PureCore: CanCompleteTask(taskId, deps, tasks)
+    alt Unfinished Prerequisites Exist
+        PureCore-->>Svc: Result.Failure("Prerequisite X not completed")
+        Svc-->>UI: Result.Failure(errors)
+        UI->>User: Display Toast Error (Blocked by Prerequisite)
+    else All Prerequisites Completed
+        PureCore-->>Svc: Result.Success(true)
+        Svc->>Entity: ChangeStatus(Completed)
+        Entity->>Entity: Validate transition & set CompletedAt
+        Entity-->>Svc: Result.Success(TaskOperationResult)
+        Svc->>Repo: UpdateAsync & SaveChangesAsync
+        Svc-->>UI: Result.Success(TaskItemDto)
+        UI->>User: Toast Success & Refresh UI state
+    end

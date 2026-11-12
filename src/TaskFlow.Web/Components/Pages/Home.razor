@@ -1,0 +1,223 @@
+@page "/"
+@page "/dashboard"
+@rendermode InteractiveServer
+@inject AnalyticsService AnalyticsService
+@inject TaskService TaskService
+@inject ProjectService ProjectService
+
+<PageTitle>Dashboard | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Dashboard</h3>
+            <p class="text-muted small mb-0">Real-time overview of tasks, projects, and productivity metrics</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm" @onclick="() => isProjectModalOpen = true">
+                <i class="bi bi-folder-plus me-1"></i>New Project
+            </button>
+            <button class="btn btn-primary btn-sm" @onclick="() => isTaskModalOpen = true">
+                <i class="bi bi-plus-lg me-1"></i>New Task
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading dashboard...</span>
+            </div>
+            <p class="text-muted mt-2 small">Analyzing application data...</p>
+        </div>
+    }
+    else if (dashboard is not null)
+    {
+        <!-- Summary Metric Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="Total Tasks" Value="@dashboard.TotalTasks.ToString()" Icon="bi bi-list-task" ColorTheme="primary" Subtext="All active & closed" />
+            </div>
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="Completed" Value="@dashboard.CompletedTasks.ToString()" Icon="bi bi-check2-circle" ColorTheme="success" Subtext="@($"{dashboard.CompletionRate:F1}% completion")" />
+            </div>
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="In Progress" Value="@dashboard.InProgressTasks.ToString()" Icon="bi bi-play-circle" ColorTheme="info" Subtext="Active work" />
+            </div>
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="Pending" Value="@dashboard.PendingTasks.ToString()" Icon="bi bi-clock-history" ColorTheme="warning" Subtext="In backlog" />
+            </div>
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="Overdue" Value="@dashboard.OverdueTasks.ToString()" Icon="bi bi-exclamation-triangle" ColorTheme="danger" Subtext="Requires attention" />
+            </div>
+            <div class="col-sm-6 col-xl-2">
+                <StatisticsCard Title="Blocked" Value="@dashboard.BlockedTasks.ToString()" Icon="bi bi-shield-x" ColorTheme="secondary" Subtext="Dependencies" />
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Project Completion Progress -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">Project Completion</h6>
+                        <a href="projects" class="text-decoration-none small text-primary">View all <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        @if (dashboard.ProjectSummaries.Count == 0)
+                        {
+                            <EmptyState Title="No projects found" Description="Create your first project to track progress." />
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var prj in dashboard.ProjectSummaries)
+                                {
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-semibold small text-dark">@prj.Name</span>
+                                            <span class="small text-muted">@prj.TaskCount tasks</span>
+                                        </div>
+                                        <ProgressBar Percentage="@prj.CompletionPercentage" Height="10" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Productivity Breakdown -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h6 class="fw-bold mb-0">Weekly Productivity</h6>
+                        <small class="text-muted">Tasks completed over past 8 weeks</small>
+                    </div>
+                    <div class="card-body">
+                        @if (dashboard.WeeklyProductivity.Count == 0)
+                        {
+                            <EmptyState Title="No completion history" Description="Completed tasks will show in weekly metrics." />
+                        }
+                        else
+                        {
+                            var maxCount = Math.Max(1, dashboard.WeeklyProductivity.Max(w => w.CompletedCount));
+                            <div class="d-flex align-items-end justify-content-between h-75 pt-3">
+                                @foreach (var week in dashboard.WeeklyProductivity)
+                                {
+                                    var barHeight = (int)((double)week.CompletedCount / maxCount * 120);
+                                    <div class="text-center d-flex flex-column align-items-center" style="width: 11%;">
+                                        <small class="fw-semibold text-muted mb-1" style="font-size: 0.75rem;">@week.CompletedCount</small>
+                                        <div class="bg-primary rounded-top" style="width: 100%; height: @(Math.Max(6, barHeight))px;"></div>
+                                        <small class="text-muted mt-2 text-truncate" style="font-size: 0.65rem;" title="@week.WeekLabel">@week.WeekLabel</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Upcoming Deadlines -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">Upcoming Deadlines (Next 7 Days)</h6>
+                        <a href="tasks" class="text-decoration-none small text-primary">All tasks <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        @if (dashboard.UpcomingDeadlines.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">No immediate deadlines within the next 7 days.</p>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var task in dashboard.UpcomingDeadlines)
+                                {
+                                    <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-semibold small">@task.Title</span>
+                                            <div class="d-flex align-items-center gap-2 mt-1">
+                                                <PriorityBadge Priority="task.Priority" />
+                                                <StatusBadge Status="task.Status" />
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-calendar-event me-1"></i>@task.Deadline?.ToString("MMM dd")
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tasks -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h6 class="fw-bold mb-0">Recent Tasks</h6>
+                    </div>
+                    <div class="card-body">
+                        @if (dashboard.RecentActivity.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">No recent tasks logged.</p>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var task in dashboard.RecentActivity)
+                                {
+                                    <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-semibold small">@task.Title</span>
+                                            <div class="small text-muted mt-1">
+                                                <span>@task.ProjectName</span>
+                                            </div>
+                                        </div>
+                                        <StatusBadge Status="task.Status" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<TaskFormModal IsOpen="@isTaskModalOpen" OnSaved="LoadDashboardAsync" OnClosed="() => isTaskModalOpen = false" />
+<ProjectFormModal IsOpen="@isProjectModalOpen" OnSaved="LoadDashboardAsync" OnClosed="() => isProjectModalOpen = false" />
+
+@code {
+    private DashboardDto? dashboard;
+    private bool isLoading = true;
+    private bool isTaskModalOpen;
+    private bool isProjectModalOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        isLoading = true;
+        try
+        {
+            dashboard = await AnalyticsService.GetDashboardAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

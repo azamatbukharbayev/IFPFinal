@@ -1,0 +1,193 @@
+@namespace TaskFlow.Web.Components.Shared
+@inject TaskService TaskService
+@inject ProjectService ProjectService
+@inject ToastService ToastService
+
+@if (IsOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">@(IsEditing ? "Edit Task" : "Create New Task")</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (Errors.Count > 0)
+                    {
+                        <div class="alert alert-danger py-2 mb-3">
+                            <ul class="mb-0 small ps-3">
+                                @foreach (var err in Errors)
+                                {
+                                    <li>@err</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" @bind="Model.Title" placeholder="Task summary..." />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Description</label>
+                            <textarea class="form-control" rows="3" @bind="Model.Description" placeholder="Detailed notes..."></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Priority</label>
+                            <select class="form-select" @bind="Model.Priority">
+                                @foreach (var p in Enum.GetValues<TaskPriority>())
+                                {
+                                    <option value="@p">@p</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Project</label>
+                            <select class="form-select" @bind="Model.ProjectId">
+                                <option value="">-- No Project --</option>
+                                @foreach (var prj in Projects)
+                                {
+                                    <option value="@prj.Id">@prj.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Deadline</label>
+                            <input type="date" class="form-control" @bind="Model.Deadline" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Estimated Effort (Hours)</label>
+                            <input type="number" step="0.5" min="0" class="form-control" @bind="Model.EstimatedEffortHours" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Labels (comma-separated)</label>
+                            <input type="text" class="form-control" @bind="LabelsInput" placeholder="frontend, ui, urgent..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Close">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveAsync" disabled="@IsSaving">
+                        @if (IsSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        @(IsEditing ? "Save Changes" : "Create Task")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public TaskItemDto? TaskToEdit { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private class FormModel
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public TaskPriority Priority { get; set; } = TaskPriority.Medium;
+        public DateTime? Deadline { get; set; }
+        public Guid? ProjectId { get; set; }
+        public decimal EstimatedEffortHours { get; set; }
+    }
+
+    private FormModel Model { get; set; } = new();
+    private string LabelsInput { get; set; } = string.Empty;
+    private List<string> Errors { get; set; } = new();
+    private bool IsSaving { get; set; }
+    private bool IsEditing => TaskToEdit is not null;
+    private IReadOnlyList<ProjectDto> Projects { get; set; } = new List<ProjectDto>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen)
+        {
+            Errors.Clear();
+            Projects = await ProjectService.GetAllProjectsAsync();
+
+            if (TaskToEdit is not null)
+            {
+                Model = new FormModel
+                {
+                    Id = TaskToEdit.Id,
+                    Title = TaskToEdit.Title,
+                    Description = TaskToEdit.Description,
+                    Priority = TaskToEdit.Priority,
+                    Deadline = TaskToEdit.Deadline,
+                    ProjectId = TaskToEdit.ProjectId,
+                    EstimatedEffortHours = TaskToEdit.EstimatedEffortHours
+                };
+                LabelsInput = string.Join(", ", TaskToEdit.Labels);
+            }
+            else
+            {
+                Model = new FormModel();
+                LabelsInput = string.Empty;
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        Errors.Clear();
+        IsSaving = true;
+
+        var labels = string.IsNullOrWhiteSpace(LabelsInput)
+            ? new List<string>()
+            : LabelsInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim()).ToList();
+
+        try
+        {
+            if (IsEditing)
+            {
+                var dto = new UpdateTaskDto(Model.Id, Model.Title, Model.Description, Model.Priority, Model.Deadline, Model.ProjectId, Model.EstimatedEffortHours, labels, null);
+                var result = await TaskService.UpdateTaskAsync(dto);
+                result.Match(
+                    _ =>
+                    {
+                        ToastService.ShowSuccess("Task updated successfully!");
+                        OnSaved.InvokeAsync();
+                        Close();
+                    },
+                    errs => Errors.AddRange(errs));
+            }
+            else
+            {
+                var dto = new CreateTaskDto(Model.Title, Model.Description, Model.Priority, Model.Deadline, Model.ProjectId, Model.EstimatedEffortHours, labels, null);
+                var result = await TaskService.CreateTaskAsync(dto);
+                result.Match(
+                    _ =>
+                    {
+                        ToastService.ShowSuccess("Task created successfully!");
+                        OnSaved.InvokeAsync();
+                        Close();
+                    },
+                    errs => Errors.AddRange(errs));
+            }
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private void Close()
+    {
+        IsOpen = false;
+        OnClosed.InvokeAsync();
+    }
+}

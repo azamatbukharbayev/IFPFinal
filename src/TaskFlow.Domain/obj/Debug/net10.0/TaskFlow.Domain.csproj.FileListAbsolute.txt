@@ -1,0 +1,12 @@
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/bin/Debug/net10.0/TaskFlow.Domain.deps.json
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/bin/Debug/net10.0/TaskFlow.Domain.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/bin/Debug/net10.0/TaskFlow.Domain.pdb
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.AssemblyInfoInputs.cache
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.AssemblyInfo.cs
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.csproj.CoreCompileInputs.cache
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.sourcelink.json
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/refint/TaskFlow.Domain.dll
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/TaskFlow.Domain.pdb
+/Users/azamatbukharbayev/Documents/AITU/IFPFinal/src/TaskFlow.Domain/obj/Debug/net10.0/ref/TaskFlow.Domain.dll

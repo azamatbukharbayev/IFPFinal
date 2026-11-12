@@ -1,0 +1,151 @@
+@page "/kanban"
+@rendermode InteractiveServer
+@inject TaskService TaskService
+@inject ToastService ToastService
+
+<PageTitle>Kanban Board | TaskFlow</PageTitle>
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Kanban Board</h3>
+            <p class="text-muted small mb-0">Visual workflow management with continuous state persistence</p>
+        </div>
+        <button class="btn btn-primary btn-sm" @onclick="() => isTaskModalOpen = true">
+            <i class="bi bi-plus-lg me-1"></i>New Task
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small mt-2">Loading board...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var status in Enum.GetValues<TaskItemStatus>())
+            {
+                var columnTasks = tasks.Where(t => t.Status == status).ToList();
+                <div class="col-md-6 col-xl-3">
+                    <div class="kanban-column bg-light rounded-3 p-3 h-100 border">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-uppercase small mb-0 text-secondary">
+                                <StatusBadge Status="status" />
+                            </h6>
+                            <span class="badge bg-white text-dark border rounded-pill">@columnTasks.Count</span>
+                        </div>
+
+                        <div class="kanban-task-list d-flex flex-column gap-2" style="min-height: 400px;">
+                            @if (columnTasks.Count == 0)
+                            {
+                                <div class="text-center py-4 text-muted small border border-dashed rounded bg-white">
+                                    No tasks in @status
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var task in columnTasks)
+                                {
+                                    <div class="card shadow-sm border-0 kanban-card">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <span class="fw-semibold small text-truncate" title="@task.Title">@task.Title</span>
+                                                <PriorityBadge Priority="task.Priority" />
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(task.ProjectName))
+                                            {
+                                                <div class="text-muted small mb-2">
+                                                    <i class="bi bi-folder me-1"></i>@task.ProjectName
+                                                </div>
+                                            }
+
+                                            <div class="d-flex justify-content-between align-items-center text-muted small mt-2 pt-2 border-top">
+                                                <span>
+                                                    @if (task.Deadline.HasValue)
+                                                    {
+                                                        <i class="bi bi-calendar-event me-1"></i>@task.Deadline.Value.ToString("MMM dd")
+                                                    }
+                                                </span>
+
+                                                <!-- Quick Status Actions -->
+                                                <div class="btn-group btn-group-sm">
+                                                    @if (status == TaskItemStatus.ToDo)
+                                                    {
+                                                        <button class="btn btn-outline-primary btn-sm py-0 px-2" @onclick="() => MoveTask(task.Id, TaskItemStatus.InProgress)" title="Start Task">
+                                                            <i class="bi bi-play-fill"></i>
+                                                        </button>
+                                                    }
+                                                    else if (status == TaskItemStatus.InProgress)
+                                                    {
+                                                        <button class="btn btn-outline-danger btn-sm py-0 px-2" @onclick="() => MoveTask(task.Id, TaskItemStatus.Blocked)" title="Block Task">
+                                                            <i class="bi bi-shield-x"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline-success btn-sm py-0 px-2" @onclick="() => MoveTask(task.Id, TaskItemStatus.Completed)" title="Complete Task">
+                                                            <i class="bi bi-check-lg"></i>
+                                                        </button>
+                                                    }
+                                                    else if (status == TaskItemStatus.Blocked)
+                                                    {
+                                                        <button class="btn btn-outline-info btn-sm py-0 px-2" @onclick="() => MoveTask(task.Id, TaskItemStatus.InProgress)" title="Unblock Task">
+                                                            <i class="bi bi-play-fill"></i>
+                                                        </button>
+                                                    }
+                                                    else if (status == TaskItemStatus.Completed)
+                                                    {
+                                                        <button class="btn btn-outline-secondary btn-sm py-0 px-2" @onclick="() => MoveTask(task.Id, TaskItemStatus.ToDo)" title="Reopen Task">
+                                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<TaskFormModal IsOpen="@isTaskModalOpen" OnSaved="LoadTasksAsync" OnClosed="() => isTaskModalOpen = false" />
+
+@code {
+    private List<TaskItemDto> tasks = new();
+    private bool isLoading = true;
+    private bool isTaskModalOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasksAsync();
+    }
+
+    private async Task LoadTasksAsync()
+    {
+        isLoading = true;
+        var result = await TaskService.GetAllTasksAsync();
+        tasks = result.ToList();
+        isLoading = false;
+    }
+
+    private async Task MoveTask(Guid taskId, TaskItemStatus newStatus)
+    {
+        var result = await TaskService.ChangeStatusAsync(taskId, newStatus);
+        result.Match(
+            _ =>
+            {
+                ToastService.ShowSuccess($"Task moved to {newStatus}");
+                LoadTasksAsync();
+            },
+            errors =>
+            {
+                ToastService.ShowError(string.Join("; ", errors), "Status Transition Blocked");
+            });
+    }
+}

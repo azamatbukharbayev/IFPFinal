@@ -1,0 +1,137 @@
+@namespace TaskFlow.Web.Components.Shared
+@inject TaskService TaskService
+@inject ToastService ToastService
+
+<div class="card shadow-sm border-0 mb-3 task-card @(IsOverdue ? "border-start border-danger border-4" : "")">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="card-title fw-bold mb-0 text-truncate" title="@Task.Title">
+                @Task.Title
+            </h6>
+            <div class="d-flex gap-1">
+                <PriorityBadge Priority="Task.Priority" />
+                <StatusBadge Status="Task.Status" />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Task.Description))
+        {
+            <p class="card-text text-muted small text-truncate-2 mb-2">
+                @Task.Description
+            </p>
+        }
+
+        <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2">
+            @if (!string.IsNullOrEmpty(Task.ProjectName))
+            {
+                <span class="badge bg-light text-dark border">
+                    <i class="bi bi-folder me-1"></i>@Task.ProjectName
+                </span>
+            }
+
+            @if (Task.EstimatedEffortHours > 0)
+            {
+                <span>
+                    <i class="bi bi-clock me-1"></i>@Task.EstimatedEffortHours.ToString("F1")h
+                </span>
+            }
+
+            @if (Task.Deadline.HasValue)
+            {
+                <span class="@(IsOverdue ? "text-danger fw-semibold" : "")">
+                    <i class="bi bi-calendar-event me-1"></i>@Task.Deadline.Value.ToString("MMM dd")
+                    @if (IsOverdue)
+                    {
+                        <span class="badge bg-danger-subtle text-danger ms-1">Overdue</span>
+                    }
+                </span>
+            }
+
+            @if (Task.PriorityScore.HasValue)
+            {
+                <span class="badge bg-primary-subtle text-primary" title="Algorithmic Priority Score">
+                    <i class="bi bi-graph-up-arrow me-1"></i>Score: @Task.PriorityScore.Value.ToString("F1")
+                </span>
+            }
+        </div>
+
+        @if (Task.Labels.Count > 0)
+        {
+            <div class="d-flex flex-wrap gap-1 mb-2">
+                @foreach (var label in Task.Labels)
+                {
+                    <span class="badge bg-light text-secondary border small">#@label</span>
+                }
+            </div>
+        }
+
+        <hr class="my-2 opacity-25" />
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle py-0 px-2" type="button" data-bs-toggle="dropdown">
+                    Move to
+                </button>
+                <ul class="dropdown-menu">
+                    @foreach (var s in Enum.GetValues<TaskItemStatus>())
+                    {
+                        if (s != Task.Status)
+                        {
+                            <li>
+                                <button class="dropdown-item small" @onclick="() => ChangeStatus(s)">
+                                    @s
+                                </button>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+
+            <div class="btn-group btn-group-sm">
+                @if (OnManageDependencies.HasDelegate)
+                {
+                    <button class="btn btn-light text-muted" title="Manage Dependencies" @onclick="() => OnManageDependencies.InvokeAsync(Task)">
+                        <i class="bi bi-diagram-3"></i>
+                    </button>
+                }
+                @if (OnEdit.HasDelegate)
+                {
+                    <button class="btn btn-light text-muted" title="Edit Task" @onclick="() => OnEdit.InvokeAsync(Task)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                }
+                @if (OnDelete.HasDelegate)
+                {
+                    <button class="btn btn-light text-danger" title="Delete Task" @onclick="() => OnDelete.InvokeAsync(Task)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TaskItemDto Task { get; set; } = null!;
+    [Parameter] public EventCallback<TaskItemDto> OnEdit { get; set; }
+    [Parameter] public EventCallback<TaskItemDto> OnDelete { get; set; }
+    [Parameter] public EventCallback<TaskItemDto> OnManageDependencies { get; set; }
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private bool IsOverdue => Task.Deadline.HasValue && Task.Deadline.Value < DateTime.UtcNow && Task.Status != TaskItemStatus.Completed;
+
+    private async Task ChangeStatus(TaskItemStatus newStatus)
+    {
+        var result = await TaskService.ChangeStatusAsync(Task.Id, newStatus);
+        result.Match(
+            updated =>
+            {
+                ToastService.ShowSuccess($"Task moved to {newStatus}");
+                OnStatusChanged.InvokeAsync();
+            },
+            errors =>
+            {
+                ToastService.ShowError(string.Join("; ", errors));
+            });
+    }
+}
